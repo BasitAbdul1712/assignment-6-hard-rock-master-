@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Hard Rock Solution - Song Lyric App</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Custom css -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <nav class="navbar  navbar-dark my-3">
+            <a class="navbar-brand" href="#">
+                <img src="images/logo.png" alt="Hard Rock Solution">
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavId" aria-controls="collapsibleNavId" aria-expanded="false" aria-label="Toggle navigation">
+                <img src="images/toggler-icon.svg" alt="">
+            </button>
+            <div class="collapse navbar-collapse" id="collapsibleNavId">
+                <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Link</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="dropdownId" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownId">
+                            <a class="dropdown-item" href="#">Action 1</a>
+                            <a class="dropdown-item" href="#">Action 2</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="content-area">
+            <div class="search-bar col-md-6 mx-auto">
+                <h1 class="text-center">Lyrics Search</h1>
+                <div class="search-box my-5">
+                    <input id="song-name-text" type="text" class="form-control" placeholder="Enter your artist song name" onkeyup="mySongName()">
+                    <button onclick="mySongName()"  id="song-name-click-button" class="btn btn-success search-btn">Search</button>
+                </div>
+            </div>
+            <!-- === Simple results === -->
+            <div class="d-flex justify-content-center">
+                <div id="search-list" class="">
+                    
+                </div>
+            </div>
+            <!-- Single Lyrics -->
+            <div class="single-lyrics text-center">
+                <button class="btn go-back">&lsaquo;</button>
+                <h2 id="song-title-and-name" class="text-success mb-4">
+
+                </h2>
+                <pre id="song-lyric" class="lyric text-white">
+    
+                </pre>
+            </div>
+            <!-- === Fancy results === -->
+            <div id="song-details" class="search-result col-md-8 mx-auto py-4">
+                <!-- single result -->
+
+                <!-- ./ single result -->
+
+                <!-- single result -->
+                
+                <!-- ./ single result -->
+            </div>
+
+            <div>
+                <h2 id="another-song-title-and-name" class="text-success mb-4 text-center">
+
+                </h2>
+                <pre id="song-lyrics2" class="lyric text-white text-center">
+
+                </pre>
+            </div>
+
+
+        </main>
+    </div>
+    <!-- Optional JavaScript -->
+    <script>
+
+        function mySongName(){
+            const songNameText = document.getElementById('song-name-text').value;
+            console.log(songNameText);
+            //const another = document.getElementById('song-details');   
+
+            fetch (`https://api.lyrics.ovh/suggest/${songNameText}`)
+            .then(res => res.json())
+            .then(data => {
+                window.data = data;
+                console.log(data);
+                data = data.data.slice(0,4);
+                let list = ''; // new list will creat after call list list+ below
+                let anotherList = '';
+                for (let i = 0; i < data.length; i++) {
+                    const user = data[i];
+                    const albumTitle = user.title;
+                    const artistName = user.artist.name;
+                    console.log(albumTitle+'-'+artistName);
+                    const songRank = user.rank;
+                    const artist = user.artist.picture;
+                    console.log(artist);
+                    console.log(songRank);
+                    list +=`<p class="author lead">
+                        <strong>${albumTitle}</strong> Album by 
+                        <span>${artistName}</span> 
+                        <button onclick="getSongDetails('${escape(artistName)}', '${escape(albumTitle)}')"
+                        class="btn btn-success">Get Lyrics</button>
+                    </p>`;
+
+                // const another = document.getElementById('song-details')
+                     anotherList += `
+                     <div  class="single-result row align-items-center my-3 p-3"> 
+                        <div  class="col-md-9">
+                            <h3 class="lyrics-name">${albumTitle}</h3>
+                            <p class="author lead">Album by <span>${artistName}</span></p>
+                            <p class="song rank">Rank: <span>${songRank}</span></p>
+                
+                        </div>
+                        <div class="col-md-3 text-md-right text-center">
+                            <button onclick="getSongDoubleDetails('${escape(artistName)}', '${escape(albumTitle)}')" 
+                            class="btn btn-success">Get Lyrics</button>
+                        </div> 
+                
+                </div>
+
+                    `
+                    
+                }
+                document.getElementById('search-list').innerHTML = list;
+                document.getElementById('song-details').innerHTML = anotherList;
+                
+            })
+        }
+
+        function getSongDetails(artistName, albumTitle){
+            console.log(artistName, albumTitle);
+            let title = document.getElementById('song-title-and-name');
+            //console.log(title);
+            let elem = document.getElementById('song-lyric');
+            //let lyrics2 = document.getElementById('song-lyrics2');
+            if(!artistName || !albumTitle) {
+                elem.innerText = 'Wrong Values';
+            }
+            fetch(`https://api.lyrics.ovh/v1/${artistName}/${albumTitle}`)
+             .then(res => res.json())
+             .then(data => {
+                 if (data.error) {
+                     console.log(data.error);
+                     elem.innerText = data.error;
+                     title.innerText = data.error;
+
+                 }
+                else {
+                    title.innerHTML = ''
+                    title.innerHTML = `
+                     <h2 class="text-success mb-4">${albumTitle} - ${artistName}</h2>
+                     `;
+                    console.log(data);
+                    elem.innerText = data.lyrics;
+                    //lyrics2.innerHTML = data.lyrics;
+                }
+               
+             });
+        }
+
+            function getSongDoubleDetails(artistName, albumTitle){
+            //console.log(artistName, albumTitle);
+            let title = document.getElementById('another-song-title-and-name');
+            let lyrics2 = document.getElementById('song-lyrics2');
+            if(!artistName || !albumTitle) {
+                elem.innerText = 'Wrong Values';
+            }
+            fetch(`https://api.lyrics.ovh/v1/${artistName}/${albumTitle}`)
+             .then(res => res.json())
+             .then(data => {
+                 if (data.error) {
+                    lyrics2.innerText = data.error;
+                    title.innerText = data.error;
+                 }
+                else {
+                    lyrics2.innerHTML = data.lyrics;
+                    title.innerHTML = ''
+                    title.innerHTML = `
+                     <h2 class="text-success mb-4">${albumTitle} - ${artistName}</h2>
+                     `;
+                }
+               
+             });
+
+        }
+
+
+
+        // fetch ('https://api.lyrics.ovh/v1/Coldplay/Adventure of a Lifetime')
+
+        // const songClickButton = document.getElementById('song-name-click-button').addEventListener('click', function(){
+        //     const songNameText = document.getElementById('song-name-text').value;
+        //     console.log(songClickButton);
+            
+        //     console.log(songNameText);
+        //     document.getElementById('song-name-click-button').value = songNameText;
+        // })
+    </script>
+
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- Custom Script Here -->
+
+</body>
+
+</html>
