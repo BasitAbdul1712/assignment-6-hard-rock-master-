@@ -167,7 +167,7 @@
                 else {
                     title.innerHTML = ''
                     title.innerHTML = `
-                     <h2 class="text-success mb-4">${albumTitle} - ${artistName}</h2>
+                     <h2 class="text-success mb-4">${unescape(albumTitle)} - ${unescape(artistName)}</h2>
                      `;
                     console.log(data);
                     elem.innerText = data.lyrics;
